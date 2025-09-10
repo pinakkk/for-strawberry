@@ -114,7 +114,7 @@
             badge.id = "wm-badge";
             badge.innerText = wm;
             document.body.appendChild(badge);
-            if(!wm.includes("pinak")){
+            if(!wm.includes("Shriman")){
                 document.body.innerHTML = "<h1 style='color:red;text-align:center'>Site Integrity Compromised</h1>";
                 throw new Error("Watermark missing!");
             }
