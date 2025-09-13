@@ -1,3 +1,4 @@
+
 document.addEventListener('DOMContentLoaded', () => {
     let scene, camera, renderer, heart, particles, controls;
     let mouseX = 0, mouseY = 0;
