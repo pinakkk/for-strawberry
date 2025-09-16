@@ -74,7 +74,7 @@ Note: Browsers often block autoplay. Use the Play button to grant audio permissi
 - The project loads the Three.js example font helvetiker_regular via CDN. When running from a local file URL, some browsers block cross-origin font requests. Use a local server if you see font-loading errors.
 
 ## Watermark and integrity
-- index.html injects a small badge (“made by pinak”) and checks for a dummy flag. If removed or altered, the page shows a warning.
+- index.html injects a small badge (“made by Dheeraj”) and checks for a dummy flag. If removed or altered, the page shows a warning.
 - For normal customization, keep those lines intact.
 
 ## Troubleshooting
@@ -93,4 +93,4 @@ Note: Browsers often block autoplay. Use the Play button to grant audio permissi
 ## License
 This project is licensed under the Apache License 2.0. See the license file in this folder.
 
-## Made By Pinak Kundu
+## Made By Dheeraj 
