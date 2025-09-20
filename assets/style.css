@@ -330,7 +330,8 @@ body {
     height: auto;
     min-height: 80px;
     overflow: visible;
-    background: rgba(255, 255, 255, 0.1);
+    /* background: rgba(255, 255, 255, 0.1); */
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
     backdrop-filter: blur(30px);
     border-radius: 20px;
     padding: 20px 30px;

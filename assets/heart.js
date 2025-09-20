@@ -27,12 +27,27 @@ document.addEventListener('DOMContentLoaded', () => {
     let loveText; // Special "I Love You" text near the heart
 
     // Song lyrics with timing (in milliseconds now for better precision)
+    // //HangOver
+    // const lyrics = [
+    //     { time: 0, text: "🎵 PAR JABSE DEKHA TUJHE..." },
+    //     { time: 2000, text: "💖 JO HUA NAHI" },
+    //     { time: 3400, text: "❤️ WO HONE LAGA"},
+    //     { time: 5300, text: "❤️ DIL MERA MUJHE JAGAKE..." },
+    //     { time: 8000, text: "✨ KHUD SEENE ME SONE LAGA" }
+    // ];
+
+
+    // // Do You Know
     const lyrics = [
-        { time: 0, text: "🎵 PAR JABSE DEKHA TUJHE..." },
-        { time: 2000, text: "💖 JO HUA NAHI" },
-        { time: 3400, text: "❤️ WO HONE LAGA"},
-        { time: 5300, text: "❤️ DIL MERA MUJHE JAGAKE..." },
-        { time: 8000, text: "✨ KHUD SEENE ME SONE LAGA" }
+        { time: 400, text: "🎶✨ OH JAANEMAN... 💕" },
+        { time: 1600, text: "💖🌹 DO YOU KNOW... 💫" },
+        { time: 2600, text: "❤️❤️❤️" },
+        { time: 3500, text: "💓💓💓" },
+        { time: 5100, text: "💞" },
+        { time: 6000, text: "✨🌙 HUME TUMSE MOHABBAT..." },
+        { time: 8000, text: "🎵💫 HUII HAI... 💕" },
+        { time: 9900, text: "🌹💖 OH JAANEMAN... 🎶" },
+        { time: 12000, text: "💞💖 DO YOU KNOW... 🌟" }
     ];
 
     // Audio variables
@@ -58,8 +73,8 @@ document.addEventListener('DOMContentLoaded', () => {
         camera.lookAt(new THREE.Vector3(0, 0, 0));
 
         // Create renderer with enhanced settings
-        renderer = new THREE.WebGLRenderer({ 
-            antialias: true, 
+        renderer = new THREE.WebGLRenderer({
+            antialias: true,
             alpha: true
         });
         renderer.setClearColor(0x000000, 0);
@@ -161,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function createLoveText() {
         if (!loadedFont) return;
 
-        const loveTextGeometry = new THREE.TextGeometry("I Love You Pinak", {
+        const loveTextGeometry = new THREE.TextGeometry("I Love You", {
             font: loadedFont,
             size: 0.5, // Increased size for better mobile visibility
             height: 0.12, // Increased depth
@@ -192,10 +207,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         loveText = new THREE.Mesh(loveTextGeometry, loveTextMaterial);
-        
+
         // Position the text higher and closer for better mobile visibility
         loveText.position.set(0, -1.8, 0.5); // Moved up and forward
-        
+
         // Animation properties
         loveText.userData = {
             originalPosition: loveText.position.clone(),
@@ -220,7 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         loveText = new THREE.Mesh(loveTextGeometry, loveTextMaterial);
         loveText.position.set(0, -1.8, 0.5); // Same positioning as 3D text
-        
+
         loveText.userData = {
             originalPosition: loveText.position.clone(),
             originalScale: new THREE.Vector3(1, 1, 1),
@@ -234,8 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!loadedFont) return;
 
         const textStrings = [
-            "KuchuPuchu", 
-            "💖",
+            "KuchuPuchu",
             "Forever",
             "My Heart",
             "Strawberry",
@@ -244,7 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         for (let i = 0; i < 12; i++) { // Reduced from 15 to 12 since we have special text now
             const textString = textStrings[Math.floor(Math.random() * textStrings.length)];
-            
+
             const textGeometry = new THREE.TextGeometry(textString, {
                 font: loadedFont,
                 size: 0.3,
@@ -473,7 +487,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             const note = new THREE.Mesh(noteGeometry, material);
-            
+
             const radius = Math.random() * 8 + 5;
             const theta = Math.random() * Math.PI * 2;
             const phi = Math.random() * Math.PI;
@@ -500,16 +514,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupAudio() {
         // Create audio element for local file
         audio = new Audio();
-        audio.src = './music.mp3';
+        audio.src = './music2.mp3';
         audio.loop = true;
         audio.preload = 'auto';
-        
+
         // Set up Web Audio API for visualizations
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
         analyser = audioContext.createAnalyser();
         analyser.fftSize = 256;
         dataArray = new Uint8Array(analyser.frequencyBinCount);
-        
+
         // Connect audio to analyser when it's ready
         audio.addEventListener('canplaythrough', () => {
             if (!source) {
@@ -629,36 +643,36 @@ document.addEventListener('DOMContentLoaded', () => {
         if (introProgress < 0.3) {
             const phase1 = introProgress / 0.3;
             eased = 1 - Math.pow(1 - phase1, 4);
-            
+
             const spiralAngle = (1 - eased) * Math.PI * 2;
             const distance = THREE.MathUtils.lerp(18, 12, eased);
             const height = THREE.MathUtils.lerp(12, 6, eased);
-            
+
             camera.position.x = Math.sin(spiralAngle) * distance * (1 - eased * 0.4);
             camera.position.y = height + Math.sin(introProgress * 8) * 0.2;
             camera.position.z = Math.cos(spiralAngle) * distance;
-            
+
         } else if (introProgress < 0.7) {
             const phase2 = (introProgress - 0.3) / 0.4;
             eased = 1 - Math.pow(1 - phase2, 3);
-            
+
             const sweepAngle = Math.PI * 1.8 * eased;
             const distance = THREE.MathUtils.lerp(12, 8, eased);
             const height = THREE.MathUtils.lerp(6, 2, eased);
-            
+
             camera.position.x = Math.sin(sweepAngle) * distance;
             camera.position.y = height + Math.sin(introProgress * 10) * 0.1;
             camera.position.z = Math.cos(sweepAngle) * distance;
-            
+
         } else {
             const phase3 = (introProgress - 0.7) / 0.3;
             eased = 1 - Math.pow(1 - phase3, 6);
-            
+
             camera.position.x = THREE.MathUtils.lerp(camera.position.x, 0, eased * 0.9);
             camera.position.y = THREE.MathUtils.lerp(camera.position.y, 0, eased * 0.9);
             camera.position.z = THREE.MathUtils.lerp(camera.position.z, 5, eased);
         }
-        
+
         const lookTarget = new THREE.Vector3(
             Math.sin(introProgress * 5) * 0.03,
             Math.cos(introProgress * 4) * 0.02,
@@ -689,19 +703,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showLyricLine(text) {
         const lyricsContainer = document.getElementById('lyrics');
-        
+
         // Clear previous lyrics
         lyricsContainer.innerHTML = '';
-        
+
         // Create line container
         const line = document.createElement('div');
         line.className = 'lyric-line';
         lyricsContainer.appendChild(line);
-        
+
         // Split text into words and create word elements
         const words = text.split(' ');
         let delayAccumulator = 0;
-        
+
         words.forEach((word, index) => {
             const wordElement = document.createElement('span');
             wordElement.className = 'word';
@@ -709,15 +723,15 @@ document.addEventListener('DOMContentLoaded', () => {
             wordElement.style.opacity = '0';
             wordElement.style.transform = 'translateY(30px)';
             line.appendChild(wordElement);
-            
+
             // Animate each word with a delay
             setTimeout(() => {
                 animateWord(wordElement);
             }, delayAccumulator);
-            
+
             delayAccumulator += 150;
         });
-        
+
         // Animate the entire line
         setTimeout(() => {
             line.style.opacity = '1';
@@ -729,7 +743,7 @@ document.addEventListener('DOMContentLoaded', () => {
         wordElement.style.transition = 'all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)';
         wordElement.style.opacity = '1';
         wordElement.style.transform = 'translateY(0)';
-        
+
         // Add a slight bounce effect
         setTimeout(() => {
             wordElement.style.transform = 'translateY(-5px)';
@@ -742,15 +756,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function changeHeartColor() {
         currentColorIndex = (currentColorIndex + 1) % heartColors.length;
         const colors = heartColors[currentColorIndex];
-        
+
         // Smooth color transition
         const targetColor = new THREE.Color(colors.main);
         const targetEmissive = new THREE.Color(colors.emissive);
-        
+
         // Animate color change
         const startColor = heart.material.color.clone();
         const startEmissive = heart.material.emissive.clone();
-        
+
         let progress = 0;
         const colorAnimation = () => {
             progress += 0.05;
@@ -766,21 +780,21 @@ document.addEventListener('DOMContentLoaded', () => {
     function togglePulsation() {
         isPulsating = !isPulsating;
         const button = document.getElementById('pulsateToggle');
-        button.innerHTML = isPulsating ? 
-            '<span class="btn-icon">💓</span><span class="btn-text">Stop Pulse</span>' : 
+        button.innerHTML = isPulsating ?
+            '<span class="btn-icon">💓</span><span class="btn-text">Stop Pulse</span>' :
             '<span class="btn-icon">💓</span><span class="btn-text">Start Pulse</span>';
     }
 
     function toggleMusic() {
         const button = document.getElementById('playMusic');
         const lyricsContainer = document.getElementById('lyrics-container');
-        
+
         if (!isPlaying) {
             // Start playing
             if (audioContext.state === 'suspended') {
                 audioContext.resume();
             }
-            
+
             audio.play().then(() => {
                 isPlaying = true;
                 button.innerHTML = '<span class="btn-icon">⏸️</span><span class="btn-text">Pause Music</span>';
@@ -840,17 +854,17 @@ document.addEventListener('DOMContentLoaded', () => {
         // Music-reactive pulsation with audio analysis - faster pulsing
         if (isPulsating) {
             let pulseFactor = 1 + Math.sin(Date.now() * 0.005) * 0.12; // Increased speed and amplitude
-            
+
             if (isPlaying && analyser) {
                 // Get audio frequency data for reactive effects
                 analyser.getByteFrequencyData(dataArray);
                 const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
                 const normalizedAverage = average / 255;
-                
+
                 // Add audio-reactive pulsation with more responsiveness
                 pulseFactor += normalizedAverage * 0.2; // Increased from 0.15
             }
-            
+
             heart.scale.set(0.85 * pulseFactor, 0.85 * pulseFactor, 0.85 * pulseFactor);
         }
 
@@ -858,35 +872,35 @@ document.addEventListener('DOMContentLoaded', () => {
         if (loveText) {
             const time = Date.now() * 0.001;
             const { originalPosition, originalScale, pulsePhase } = loveText.userData;
-            
+
             // More prominent and faster floating animation
             loveText.position.y = originalPosition.y + Math.sin(time * 0.8 + pulsePhase) * 0.2; // Faster and bigger movement
             loveText.position.z = originalPosition.z + Math.sin(time * 0.6 + pulsePhase) * 0.15;
-            
+
             // More noticeable and faster pulsing scale
             const scaleFactor = 1 + Math.sin(time * 1.5 + pulsePhase) * 0.15; // Faster and bigger pulse
             loveText.scale.set(scaleFactor, scaleFactor, scaleFactor);
-            
+
             // More dynamic rotation for better effect
             loveText.rotation.y = Math.sin(time * 0.4) * 0.15; // Increased rotation
             loveText.rotation.z = Math.sin(time * 0.3) * 0.08;
-            
+
             // Enhanced color effects with faster transitions
             const baseColor = new THREE.Color(0xff1155);
             const glowIntensity = 0.5 + Math.sin(time * 3) * 0.4; // Faster color pulsing
-            
+
             loveText.material.color.copy(baseColor).multiplyScalar(1 + glowIntensity * 0.3);
             loveText.material.emissive.copy(baseColor).multiplyScalar(0.3 + glowIntensity * 0.3);
-            
+
             // Music reactive enhancement with more responsiveness
             if (isPlaying && analyser && dataArray) {
                 const bassData = dataArray.slice(0, dataArray.length / 4);
                 const bassIntensity = (bassData.reduce((a, b) => a + b) / bassData.length) / 255;
-                
+
                 // Make text more prominent with music
                 const musicScale = 1 + bassIntensity * 0.3; // Increased responsiveness
                 loveText.scale.multiplyScalar(musicScale);
-                
+
                 // Increase brightness with bass
                 loveText.material.emissive.multiplyScalar(1 + bassIntensity * 0.7);
             }
@@ -896,14 +910,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const time = Date.now() * 0.001;
         if (scene.userData.lights) {
             const lights = scene.userData.lights;
-            
+
             let bassIntensity = 1;
             if (isPlaying && analyser && dataArray) {
                 // Use low frequency data for bass response
                 const bassData = dataArray.slice(0, dataArray.length / 4);
                 bassIntensity = 1 + (bassData.reduce((a, b) => a + b) / bassData.length) / 255;
             }
-            
+
             // Faster light animations
             lights.rim1.intensity = (2 + Math.sin(time * 1.0) * 0.7) * bassIntensity; // Faster oscillation
             lights.rim2.intensity = (1.5 + Math.cos(time * 0.8) * 0.5) * bassIntensity;
@@ -949,7 +963,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isPlaying && analyser && dataArray) {
                 const bassData = dataArray.slice(0, dataArray.length / 4);
                 const bassIntensity = (bassData.reduce((a, b) => a + b) / bassData.length) / 255;
-                
+
                 const hue = (time * 0.12 + index * 0.1) % 1; // Faster color cycling
                 const newColor = new THREE.Color().setHSL(hue * 0.1 + 0.85, 0.8, 0.7 + bassIntensity * 0.3);
                 textMesh.material.color.lerp(newColor, 0.03);
@@ -964,7 +978,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 element.position.x = originalPosition.x + Math.sin(time * speed * 1.4 + phase) * amplitude;
                 element.position.y = originalPosition.y + Math.cos(time * speed * 1.0 + phase) * amplitude * 0.8;
                 element.rotation.z += 0.008; // Faster rotation
-                
+
                 // Enhanced fade in/out effect
                 element.material.opacity = 0.3 + Math.sin(time * speed * 3 + phase) * 0.25;
             });
@@ -986,7 +1000,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function showLetter() {
     const letterModal = document.getElementById('letterModal');
     letterModal.classList.add('show');
-    
+
     // Pause music if playing for a more intimate moment
     if (isPlaying) {
         audio.pause();
@@ -999,8 +1013,8 @@ function showLetter() {
         shownLyrics.clear();
     }
 
-    
-    
+
+
     // Add a gentle entrance animation
     setTimeout(() => {
         letterModal.querySelector('.letter-content').style.transform = 'scale(1) translateY(0)';
@@ -1011,10 +1025,10 @@ function showLetter() {
 function hideLetter() {
     const letterModal = document.getElementById('letterModal');
     const letterContent = letterModal.querySelector('.letter-content');
-    
+
     // Add exit animation
     letterContent.style.transform = 'scale(0.7) translateY(50px)';
-    
+
     setTimeout(() => {
         letterModal.classList.remove('show');
         letterContent.style.transform = 'scale(0.7) translateY(50px)';
