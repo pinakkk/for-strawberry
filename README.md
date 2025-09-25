@@ -1,4 +1,4 @@
-# For My Cutie 💖
+# For My Cutie Inayu 🥹💖
 
 A small interactive 3D love-letter experience built with Three.js. It renders a glossy pulsating 3D heart with floating particles and animated text, syncs word-by-word lyrics to music, and includes a styled letter modal. Designed to run in the browser with smooth animations and mobile-friendly UI.
 
@@ -58,7 +58,7 @@ Note: Browsers often block autoplay. Use the Play button to grant audio permissi
   audio.src = './music.mp3';
   ```
 
-- “I Love You” text:
+- “I Love You inayu 🥺🫶🏻” text:
   - Edit createLoveText() in assets/heart.js (text, size, position, color).
 
 - Heart colors:
@@ -92,5 +92,3 @@ Note: Browsers often block autoplay. Use the Play button to grant audio permissi
 
 ## License
 This project is licensed under the Apache License 2.0. See the license file in this folder.
-
-## Made By Pinak Kundu
