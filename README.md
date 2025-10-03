@@ -1,4 +1,4 @@
-# For My Cutie 💖
+# For My Cutie ISHUUU 💖
 
 A small interactive 3D love-letter experience built with Three.js. It renders a glossy pulsating 3D heart with floating particles and animated text, syncs word-by-word lyrics to music, and includes a styled letter modal. Designed to run in the browser with smooth animations and mobile-friendly UI.
 
