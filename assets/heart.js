@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     let scene, camera, renderer, heart, particles, controls;
     let mouseX = 0, mouseY = 0;
-    let isPulsating = true;
+    let isPulsating = false;
     let isPlaying = false;
     let currentTime = 0;
     let heartColors = [
@@ -27,28 +27,28 @@ document.addEventListener('DOMContentLoaded', () => {
     let loveText; // Special "I Love You" text near the heart
 
     // Song lyrics with timing (in milliseconds now for better precision)
-    // //HangOver
-    // const lyrics = [
-    //     { time: 0, text: "🎵 PAR JABSE DEKHA TUJHE..." },
-    //     { time: 2000, text: "💖 JO HUA NAHI" },
-    //     { time: 3400, text: "❤️ WO HONE LAGA"},
-    //     { time: 5300, text: "❤️ DIL MERA MUJHE JAGAKE..." },
-    //     { time: 8000, text: "✨ KHUD SEENE ME SONE LAGA" }
-    // ];
+    //HangOver
+    const lyrics = [
+        { time: 0, text: "🎵 PAR JABSE DEKHA TUJHE..." },
+        { time: 2000, text: "💖 JO HUA NAHI" },
+        { time: 3400, text: "❤️ WO HONE LAGA" },
+        { time: 5300, text: "❤️ DIL MERA MUJHE JAGAKE..." },
+        { time: 8000, text: "✨ KHUD SEENE ME SONE LAGA" }
+    ];
 
 
     // // Do You Know
-    const lyrics = [
-        { time: 400, text: "🎶✨ OH JAANEMAN... 💕" },
-        { time: 1600, text: "💖🌹 DO YOU KNOW... 💫" },
-        { time: 2600, text: "❤️❤️❤️" },
-        { time: 3500, text: "💓💓💓" },
-        { time: 5100, text: "💞" },
-        { time: 6000, text: "✨🌙 HUME TUMSE MOHABBAT..." },
-        { time: 8000, text: "🎵💫 HUII HAI... 💕" },
-        { time: 9900, text: "🌹💖 OH JAANEMAN... 🎶" },
-        { time: 12000, text: "💞💖 DO YOU KNOW... 🌟" }
-    ];
+    // const lyrics = [
+    //     { time: 400, text: "🎶✨ OH JAANEMAN... 💕" },
+    //     { time: 1600, text: "💖🌹 DO YOU KNOW... 💫" },
+    //     { time: 2600, text: "❤️❤️❤️" },
+    //     { time: 3500, text: "💓💓💓" },
+    //     { time: 5100, text: "💞" },
+    //     { time: 6000, text: "✨🌙 HUME TUMSE MOHABBAT..." },
+    //     { time: 8000, text: "🎵💫 HUII HAI... 💕" },
+    //     { time: 9900, text: "🌹💖 OH JAANEMAN... 🎶" },
+    //     { time: 12000, text: "💞💖 DO YOU KNOW... 🌟" }
+    // ];
 
     // Audio variables
     let audio;
@@ -60,6 +60,83 @@ document.addEventListener('DOMContentLoaded', () => {
     // Font loader and font
     let fontLoader;
     let loadedFont;
+    let lyricTimers = [];
+
+    const body = document.body;
+    const controlsElement = document.getElementById('controls');
+    const lyricsContainer = document.getElementById('lyrics-container');
+    const lyricsElement = document.getElementById('lyrics');
+    const playButton = document.getElementById('playMusic');
+    const pulseButton = document.getElementById('pulsateToggle');
+    const themeButton = document.getElementById('themeToggle');
+    const themeButtonLabel = themeButton ? themeButton.querySelector('.theme-toggle-text') : null;
+    const letterModal = document.getElementById('letterModal');
+    const themeDock = document.getElementById('themeDock');
+    let currentTheme = 'dark';
+
+    function clearLyricTimers() {
+        lyricTimers.forEach((timerId) => clearTimeout(timerId));
+        lyricTimers = [];
+    }
+
+    function clearLyrics() {
+        clearLyricTimers();
+        lyricsElement.innerHTML = '';
+        shownLyrics.clear();
+        lastLyricsTime = 0;
+    }
+
+    function pausePlayback(resetLine = true) {
+        if (audio) {
+            audio.pause();
+        }
+
+        isPlaying = false;
+        body.classList.remove('music-on');
+        playButton.innerHTML = '<span class="btn-icon">🎵</span><span class="btn-text">Play Music</span>';
+        playButton.classList.remove('playing');
+        lyricsContainer.classList.remove('show');
+
+        if (resetLine) {
+            clearLyrics();
+        }
+    }
+
+    function syncThemeButton() {
+        if (!themeButton) return;
+
+        const isLight = currentTheme === 'light';
+        themeButton.setAttribute('aria-pressed', String(isLight));
+        themeButton.setAttribute('aria-label', isLight ? 'Switch to dark theme' : 'Switch to light theme');
+
+        if (themeButtonLabel) {
+            themeButtonLabel.textContent = isLight ? 'Dark Mode' : 'Light Mode';
+        }
+    }
+
+    function applyTheme(theme) {
+        currentTheme = theme === 'light' ? 'light' : 'dark';
+        body.classList.toggle('light-theme', currentTheme === 'light');
+        syncThemeButton();
+
+        if (scene && scene.fog) {
+            scene.fog.color.set(currentTheme === 'light' ? 0xffeef1 : 0x000015);
+        }
+
+        if (renderer) {
+            renderer.toneMappingExposure = currentTheme === 'light' ? 1.05 : 1.2;
+        }
+
+        try {
+            window.localStorage.setItem('heart-theme', currentTheme);
+        } catch (error) {
+            console.warn('Theme preference could not be saved.', error);
+        }
+    }
+
+    function toggleTheme() {
+        applyTheme(currentTheme === 'light' ? 'dark' : 'light');
+    }
 
     // Initialize the scene
     function init() {
@@ -122,15 +199,16 @@ document.addEventListener('DOMContentLoaded', () => {
         document.addEventListener('mousemove', onMouseMove);
 
         // Add button event listeners
-        document.getElementById('pulsateToggle').addEventListener('click', togglePulsation);
+        pulseButton.addEventListener('click', togglePulsation);
         // document.getElementById('colorChange').addEventListener('click', changeHeartColor);
-        document.getElementById('playMusic').addEventListener('click', toggleMusic);
+        playButton.addEventListener('click', toggleMusic);
+        themeButton.addEventListener('click', toggleTheme);
         document.getElementById('resetCamera').addEventListener('click', resetCamera);
         document.getElementById('viewLetter').addEventListener('click', showLetter);
         document.getElementById('closeLetter').addEventListener('click', hideLetter);
 
         // Close letter when clicking outside
-        document.getElementById('letterModal').addEventListener('click', (e) => {
+        letterModal.addEventListener('click', (e) => {
             if (e.target.id === 'letterModal') {
                 hideLetter();
             }
@@ -145,8 +223,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Show controls with reduced delay but NOT lyrics
         setTimeout(() => {
-            document.getElementById('controls').classList.add('show');
-        }, 2000);
+            controlsElement.classList.add('show');
+            themeDock.classList.add('show');
+        }, 1200);
+
+        let savedTheme = 'dark';
+        try {
+            savedTheme = window.localStorage.getItem('heart-theme') || 'dark';
+        } catch (error) {
+            console.warn('Theme preference could not be loaded.', error);
+        }
+        applyTheme(savedTheme);
 
         // Start animation loop
         animate();
@@ -176,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function createLoveText() {
         if (!loadedFont) return;
 
-        const loveTextGeometry = new THREE.TextGeometry("I Love You Strawberry", {
+        const loveTextGeometry = new THREE.TextGeometry("I Love You", {
             font: loadedFont,
             size: 0.5, // Increased size for better mobile visibility
             height: 0.12, // Increased depth
@@ -514,7 +601,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupAudio() {
         // Create audio element for local file
         audio = new Audio();
-        audio.src = './music2.mp3';
+        audio.src = './music.mp3';
         audio.loop = true;
         audio.preload = 'auto';
 
@@ -543,8 +630,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         audio.addEventListener('ended', () => {
             currentTime = 0;
-            shownLyrics.clear();
-            document.getElementById('lyrics').innerHTML = '';
+            clearLyrics();
         });
 
         audio.addEventListener('error', (e) => {
@@ -687,8 +773,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Check if we need to reset when song loops
         if (currentTime < lastLyricsTime) {
-            shownLyrics.clear();
-            document.getElementById('lyrics').innerHTML = '';
+            clearLyrics();
         }
 
         lyrics.forEach((lyric, index) => {
@@ -702,55 +787,44 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showLyricLine(text) {
-        const lyricsContainer = document.getElementById('lyrics');
-
         // Clear previous lyrics
-        lyricsContainer.innerHTML = '';
+        clearLyricTimers();
+        lyricsElement.innerHTML = '';
 
         // Create line container
         const line = document.createElement('div');
         line.className = 'lyric-line';
-        lyricsContainer.appendChild(line);
+        lyricsElement.appendChild(line);
 
         // Split text into words and create word elements
         const words = text.split(' ');
-        let delayAccumulator = 0;
 
         words.forEach((word, index) => {
             const wordElement = document.createElement('span');
             wordElement.className = 'word';
             wordElement.textContent = word;
-            wordElement.style.opacity = '0';
-            wordElement.style.transform = 'translateY(30px)';
+
+            if (/[\u{1F300}-\u{1FAFF}\u2764\u2728]/u.test(word)) {
+                wordElement.classList.add('emoji-word');
+            } else if (index === words.length - 1 || index === 0) {
+                wordElement.classList.add('accent-word');
+            }
+
             line.appendChild(wordElement);
 
-            // Animate each word with a delay
-            setTimeout(() => {
+            const timerId = window.setTimeout(() => {
                 animateWord(wordElement);
-            }, delayAccumulator);
-
-            delayAccumulator += 150;
+            }, index * 130);
+            lyricTimers.push(timerId);
         });
 
-        // Animate the entire line
-        setTimeout(() => {
-            line.style.opacity = '1';
-        }, 100);
+        requestAnimationFrame(() => {
+            line.classList.add('is-visible');
+        });
     }
 
     function animateWord(wordElement) {
-        // Simple CSS transition animation
-        wordElement.style.transition = 'all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)';
-        wordElement.style.opacity = '1';
-        wordElement.style.transform = 'translateY(0)';
-
-        // Add a slight bounce effect
-        setTimeout(() => {
-            wordElement.style.transform = 'translateY(-5px)';
-            setTimeout(() => {
-                wordElement.style.transform = 'translateY(0)';
-            }, 100);
-        }, 400);
+        wordElement.classList.add('is-visible');
     }
 
     function changeHeartColor() {
@@ -779,16 +853,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function togglePulsation() {
         isPulsating = !isPulsating;
-        const button = document.getElementById('pulsateToggle');
-        button.innerHTML = isPulsating ?
+        pulseButton.innerHTML = isPulsating ?
             '<span class="btn-icon">💓</span><span class="btn-text">Stop Pulse</span>' :
             '<span class="btn-icon">💓</span><span class="btn-text">Start Pulse</span>';
     }
 
     function toggleMusic() {
-        const button = document.getElementById('playMusic');
-        const lyricsContainer = document.getElementById('lyrics-container');
-
         if (!isPlaying) {
             // Start playing
             if (audioContext.state === 'suspended') {
@@ -797,9 +867,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             audio.play().then(() => {
                 isPlaying = true;
-                button.innerHTML = '<span class="btn-icon">⏸️</span><span class="btn-text">Pause Music</span>';
-                button.classList.add('playing');
-                shownLyrics.clear();
+                body.classList.add('music-on');
+                playButton.innerHTML = '<span class="btn-icon">⏸️</span><span class="btn-text">Pause Music</span>';
+                playButton.classList.add('playing');
+                clearLyrics();
                 lyricsContainer.classList.add('show');
             }).catch((error) => {
                 console.error('Error playing audio:', error);
@@ -807,14 +878,22 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         } else {
             // Pause playing
-            audio.pause();
-            isPlaying = false;
-            button.innerHTML = '<span class="btn-icon">🎵</span><span class="btn-text">Play Music</span>';
-            button.classList.remove('playing');
-            lyricsContainer.classList.remove('show');
-            document.getElementById('lyrics').innerHTML = '';
-            shownLyrics.clear();
+            pausePlayback();
         }
+    }
+
+    function showLetter() {
+        letterModal.classList.add('show');
+        body.classList.add('letter-open');
+
+        if (isPlaying) {
+            pausePlayback();
+        }
+    }
+
+    function hideLetter() {
+        letterModal.classList.remove('show');
+        body.classList.remove('letter-open');
     }
 
     function resetCamera() {
@@ -838,6 +917,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function animate() {
         requestAnimationFrame(animate);
+        const time = performance.now() * 0.001;
 
         // Update cinematic intro
         updateCinematicIntro();
@@ -847,147 +927,124 @@ document.addEventListener('DOMContentLoaded', () => {
             controls.update();
         }
 
-        // Enhanced and faster heart animation
-        heart.rotation.y += 0.006; // Increased from 0.004
-        heart.rotation.x += 0.0015; // Increased from 0.001
+        // Keep the heart in slow motion so the scene feels polished instead of frantic.
+        heart.rotation.y += 0.003;
+        heart.rotation.x += 0.0008;
 
-        // Music-reactive pulsation with audio analysis - faster pulsing
+        // Music-reactive pulsation with a steadier baseline.
         if (isPulsating) {
-            let pulseFactor = 1 + Math.sin(Date.now() * 0.005) * 0.12; // Increased speed and amplitude
+            let pulseFactor = 1 + Math.sin(time * 2.6) * 0.08;
 
             if (isPlaying && analyser) {
-                // Get audio frequency data for reactive effects
                 analyser.getByteFrequencyData(dataArray);
                 const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
                 const normalizedAverage = average / 255;
 
-                // Add audio-reactive pulsation with more responsiveness
-                pulseFactor += normalizedAverage * 0.2; // Increased from 0.15
+                pulseFactor += normalizedAverage * 0.14;
             }
 
             heart.scale.set(0.85 * pulseFactor, 0.85 * pulseFactor, 0.85 * pulseFactor);
         }
 
-        // Animate the special "I Love You" text with enhanced and faster animation
+        // Animate the special "I Love You" text with softer motion.
         if (loveText) {
-            const time = Date.now() * 0.001;
             const { originalPosition, originalScale, pulsePhase } = loveText.userData;
 
-            // More prominent and faster floating animation
-            loveText.position.y = originalPosition.y + Math.sin(time * 0.8 + pulsePhase) * 0.2; // Faster and bigger movement
-            loveText.position.z = originalPosition.z + Math.sin(time * 0.6 + pulsePhase) * 0.15;
+            loveText.position.y = originalPosition.y + Math.sin(time * 0.75 + pulsePhase) * 0.14;
+            loveText.position.z = originalPosition.z + Math.sin(time * 0.48 + pulsePhase) * 0.1;
 
-            // More noticeable and faster pulsing scale
-            const scaleFactor = 1 + Math.sin(time * 1.5 + pulsePhase) * 0.15; // Faster and bigger pulse
+            const scaleFactor = 1 + Math.sin(time * 1.3 + pulsePhase) * 0.09;
             loveText.scale.set(scaleFactor, scaleFactor, scaleFactor);
 
-            // More dynamic rotation for better effect
-            loveText.rotation.y = Math.sin(time * 0.4) * 0.15; // Increased rotation
-            loveText.rotation.z = Math.sin(time * 0.3) * 0.08;
+            loveText.rotation.y = Math.sin(time * 0.36) * 0.08;
+            loveText.rotation.z = Math.sin(time * 0.26) * 0.04;
 
-            // Enhanced color effects with faster transitions
             const baseColor = new THREE.Color(0xff1155);
-            const glowIntensity = 0.5 + Math.sin(time * 3) * 0.4; // Faster color pulsing
+            const glowIntensity = 0.45 + Math.sin(time * 2.2) * 0.24;
 
             loveText.material.color.copy(baseColor).multiplyScalar(1 + glowIntensity * 0.3);
             loveText.material.emissive.copy(baseColor).multiplyScalar(0.3 + glowIntensity * 0.3);
 
-            // Music reactive enhancement with more responsiveness
             if (isPlaying && analyser && dataArray) {
                 const bassData = dataArray.slice(0, dataArray.length / 4);
                 const bassIntensity = (bassData.reduce((a, b) => a + b) / bassData.length) / 255;
 
-                // Make text more prominent with music
-                const musicScale = 1 + bassIntensity * 0.3; // Increased responsiveness
+                const musicScale = 1 + bassIntensity * 0.18;
                 loveText.scale.multiplyScalar(musicScale);
 
-                // Increase brightness with bass
-                loveText.material.emissive.multiplyScalar(1 + bassIntensity * 0.7);
+                loveText.material.emissive.multiplyScalar(1 + bassIntensity * 0.45);
             }
         }
 
-        // Animate lights with faster audio reactivity
-        const time = Date.now() * 0.001;
         if (scene.userData.lights) {
             const lights = scene.userData.lights;
 
             let bassIntensity = 1;
             if (isPlaying && analyser && dataArray) {
-                // Use low frequency data for bass response
                 const bassData = dataArray.slice(0, dataArray.length / 4);
                 bassIntensity = 1 + (bassData.reduce((a, b) => a + b) / bassData.length) / 255;
             }
 
-            // Faster light animations
-            lights.rim1.intensity = (2 + Math.sin(time * 1.0) * 0.7) * bassIntensity; // Faster oscillation
-            lights.rim2.intensity = (1.5 + Math.cos(time * 0.8) * 0.5) * bassIntensity;
-            lights.accent.color.setHSL((time * 0.15) % 1, 0.8, 0.5 * bassIntensity); // Faster color change
+            lights.rim1.intensity = (1.7 + Math.sin(time * 0.72) * 0.4) * bassIntensity;
+            lights.rim2.intensity = (1.25 + Math.cos(time * 0.58) * 0.3) * bassIntensity;
+            lights.accent.color.setHSL(0.96 + Math.sin(time * 0.24) * 0.03, 0.72, 0.44);
         }
 
-        // Enhanced particles animation with faster movement
+        // Keep particles airy and readable.
         particles.children.forEach((miniHeart, index) => {
             const { originalPosition, speed, amplitude, phase, colorSpeed } = miniHeart.userData;
 
-            // Position animation with increased speed
-            miniHeart.position.x = originalPosition.x + Math.sin(time * speed * 1.2 + phase) * amplitude;
-            miniHeart.position.y = originalPosition.y + Math.cos(time * speed * 1.0 + phase) * amplitude * 0.6;
-            miniHeart.position.z = originalPosition.z + Math.sin(time * speed * 1.5 + phase) * amplitude * 0.4;
+            miniHeart.position.x = originalPosition.x + Math.sin(time * speed * 0.9 + phase) * amplitude;
+            miniHeart.position.y = originalPosition.y + Math.cos(time * speed * 0.74 + phase) * amplitude * 0.55;
+            miniHeart.position.z = originalPosition.z + Math.sin(time * speed * 1.05 + phase) * amplitude * 0.35;
 
-            // Faster rotation animation
-            miniHeart.rotation.x += 0.012; // Increased from 0.008
-            miniHeart.rotation.y += 0.009; // Increased from 0.006
-            miniHeart.rotation.z += 0.006; // Increased from 0.004
+            miniHeart.rotation.x += 0.007;
+            miniHeart.rotation.y += 0.005;
+            miniHeart.rotation.z += 0.003;
 
-            // Faster color animation
-            const hue = (time * colorSpeed * 0.15 + index * 0.1) % 1; // Faster color change
-            const newColor = new THREE.Color().setHSL(hue * 0.1 + 0.85, 0.8, 0.7);
-            miniHeart.material.color.lerp(newColor, 0.03); // Smoother transition
+            const hue = 0.93 + Math.sin(time * colorSpeed * 0.2 + index * 0.24) * 0.03;
+            const newColor = new THREE.Color().setHSL(hue, 0.82, 0.68);
+            miniHeart.material.color.lerp(newColor, 0.025);
             miniHeart.material.emissive.copy(newColor).multiplyScalar(0.25);
         });
 
-        // Animate floating 3D texts with improved speed
+        // Float the surrounding words with less jitter.
         floatingTexts.forEach((textMesh, index) => {
             const { originalPosition, speed, amplitude, phase, rotationSpeed } = textMesh.userData;
 
-            // Faster position animation
-            textMesh.position.x = originalPosition.x + Math.sin(time * speed * 1.3 + phase) * amplitude;
-            textMesh.position.y = originalPosition.y + Math.cos(time * speed * 1.1 + phase) * amplitude * 0.6;
-            textMesh.position.z = originalPosition.z + Math.sin(time * speed * 1.6 + phase) * amplitude * 0.4;
+            textMesh.position.x = originalPosition.x + Math.sin(time * speed * 0.92 + phase) * amplitude;
+            textMesh.position.y = originalPosition.y + Math.cos(time * speed * 0.8 + phase) * amplitude * 0.55;
+            textMesh.position.z = originalPosition.z + Math.sin(time * speed * 1.02 + phase) * amplitude * 0.3;
 
-            // Faster rotation animation
-            textMesh.rotation.x += rotationSpeed.x * 1.2;
-            textMesh.rotation.y += rotationSpeed.y * 1.2;
-            textMesh.rotation.z += rotationSpeed.z * 1.2;
+            textMesh.rotation.x += rotationSpeed.x * 0.75;
+            textMesh.rotation.y += rotationSpeed.y * 0.75;
+            textMesh.rotation.z += rotationSpeed.z * 0.75;
 
-            // Enhanced color animation with music reactivity
             if (isPlaying && analyser && dataArray) {
                 const bassData = dataArray.slice(0, dataArray.length / 4);
                 const bassIntensity = (bassData.reduce((a, b) => a + b) / bassData.length) / 255;
 
-                const hue = (time * 0.12 + index * 0.1) % 1; // Faster color cycling
-                const newColor = new THREE.Color().setHSL(hue * 0.1 + 0.85, 0.8, 0.7 + bassIntensity * 0.3);
+                const hue = 0.92 + Math.sin(time * 0.22 + index * 0.35) * 0.035;
+                const newColor = new THREE.Color().setHSL(hue, 0.78, 0.68 + bassIntensity * 0.14);
                 textMesh.material.color.lerp(newColor, 0.03);
-                textMesh.material.emissive.copy(newColor).multiplyScalar(0.2 + bassIntensity * 0.4);
+                textMesh.material.emissive.copy(newColor).multiplyScalar(0.16 + bassIntensity * 0.24);
             }
         });
 
-        // Animate floating elements with increased speed
         if (scene.userData.floatingElements) {
             scene.userData.floatingElements.forEach((element, index) => {
                 const { originalPosition, speed, amplitude, phase } = element.userData;
-                element.position.x = originalPosition.x + Math.sin(time * speed * 1.4 + phase) * amplitude;
-                element.position.y = originalPosition.y + Math.cos(time * speed * 1.0 + phase) * amplitude * 0.8;
-                element.rotation.z += 0.008; // Faster rotation
+                element.position.x = originalPosition.x + Math.sin(time * speed * 0.9 + phase) * amplitude;
+                element.position.y = originalPosition.y + Math.cos(time * speed * 0.72 + phase) * amplitude * 0.7;
+                element.rotation.z += 0.004;
 
-                // Enhanced fade in/out effect
-                element.material.opacity = 0.3 + Math.sin(time * speed * 3 + phase) * 0.25;
+                element.material.opacity = 0.24 + Math.sin(time * speed * 1.8 + phase) * 0.18;
             });
         }
 
-        // Enhanced mouse interaction with more responsiveness
         if (!cameraIntroActive) {
-            heart.rotation.x = Math.PI + mouseY * 0.15; // Increased sensitivity
-            heart.rotation.z = mouseX * 0.15;
+            heart.rotation.x = Math.PI + mouseY * 0.1;
+            heart.rotation.z = mouseX * 0.1;
         }
 
         renderer.render(scene, camera);
@@ -996,41 +1053,3 @@ document.addEventListener('DOMContentLoaded', () => {
     // Start the 3D scene
     init();
 });
-
-function showLetter() {
-    const letterModal = document.getElementById('letterModal');
-    letterModal.classList.add('show');
-
-    // Pause music if playing for a more intimate moment
-    if (isPlaying) {
-        audio.pause();
-        isPlaying = false;
-        const button = document.getElementById('playMusic');
-        button.innerHTML = '<span class="btn-icon">🎵</span><span class="btn-text">Play Music</span>';
-        button.classList.remove('playing');
-        document.getElementById('lyrics-container').classList.remove('show');
-        document.getElementById('lyrics').innerHTML = '';
-        shownLyrics.clear();
-    }
-
-
-
-    // Add a gentle entrance animation
-    setTimeout(() => {
-        letterModal.querySelector('.letter-content').style.transform = 'scale(1) translateY(0)';
-    }, 100);
-}
-
-
-function hideLetter() {
-    const letterModal = document.getElementById('letterModal');
-    const letterContent = letterModal.querySelector('.letter-content');
-
-    // Add exit animation
-    letterContent.style.transform = 'scale(0.7) translateY(50px)';
-
-    setTimeout(() => {
-        letterModal.classList.remove('show');
-        letterContent.style.transform = 'scale(0.7) translateY(50px)';
-    }, 200);
-}
