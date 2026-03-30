@@ -91,6 +91,6 @@ Note: Browsers often block autoplay. Use the Play button to grant audio permissi
   - Lower renderer pixelRatio or disable shadows for older devices.
 
 ## License
-This project is licensed under the Apache License 2.0. See the license file in this folder.
+CUSTOM LICENSE | Author : Pinak Kundu
 
 ## Made By Pinak Kundu

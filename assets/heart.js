@@ -28,13 +28,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Song lyrics with timing (in milliseconds now for better precision)
     //HangOver
-    const lyrics = [
-        { time: 0, text: "🎵 PAR JABSE DEKHA TUJHE..." },
-        { time: 2000, text: "💖 JO HUA NAHI" },
-        { time: 3400, text: "❤️ WO HONE LAGA" },
-        { time: 5300, text: "❤️ DIL MERA MUJHE JAGAKE..." },
-        { time: 8000, text: "✨ KHUD SEENE ME SONE LAGA" }
-    ];
+    // const lyrics = [
+    //     { time: 0, text: "🎵 PAR JABSE DEKHA TUJHE..." },
+    //     { time: 2000, text: "💖 JO HUA NAHI" },
+    //     { time: 3400, text: "❤️ WO HONE LAGA" },
+    //     { time: 5300, text: "❤️ DIL MERA MUJHE JAGAKE..." },
+    //     { time: 8000, text: "✨ KHUD SEENE ME SONE LAGA" }
+    // ];
 
 
     // // Do You Know
@@ -49,6 +49,18 @@ document.addEventListener('DOMContentLoaded', () => {
     //     { time: 9900, text: "🌹💖 OH JAANEMAN... 🎶" },
     //     { time: 12000, text: "💞💖 DO YOU KNOW... 🌟" }
     // ];
+
+    // Main Tera Boyfriend
+    const lyrics = [
+        { time: 0, text: "🎵 KARLE TU FEEL MENU..." },
+        { time: 1400, text: "💖 TOUCH KARKE" },
+        { time: 2200, text: "❤️ PYAR DIKHADE " },
+        { time: 3000, text: "🌟 VERY MUCH KARKE " },
+        { time: 4500, text: "❤️ PLEASE IK VARI KEHDE..." },
+        { time: 5500, text: "✨ REHNA SOHNIYE TERE" },
+        { time: 6800, text: "🌹💖 NAAL NAAL" },
+        { time: 7800, text: "💞NI" }
+    ];
 
     // Audio variables
     let audio;
@@ -601,7 +613,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupAudio() {
         // Create audio element for local file
         audio = new Audio();
-        audio.src = './music.mp3';
+        audio.src = './music3.mp3';
         audio.loop = true;
         audio.preload = 'auto';
 
